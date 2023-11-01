@@ -6,9 +6,8 @@ from core.models.get_static_data import *
 import re
 import datetime
 
-def store_match_data(matches, current_patch, min_date_time, regional_routing_value, api_key):
-    # Create a mysql connection
-    connection = create_mysql_connection()
+def store_match_data(matches, current_patch, min_date_time, regional_routing_value, region, api_key):
+    static_data = get_static_data()
 
     for match in matches:
         ## Check if a match was already stored in database and skip if yes
@@ -25,35 +24,36 @@ def store_match_data(matches, current_patch, min_date_time, regional_routing_val
         if min_date_time > match_date_time: continue
 
         for participant in api_result["info"]["participants"]:
-            composition_id = insert_composition(match, participant['level'], participant['placement'], patch, match_date_time)
+            composition_id = insert_composition(match, participant['level'], participant['placement'], patch, region, match_date_time)
 
             for unit in participant["units"]:
-                ## Get static data of the champion and skip if a unit is not a champion
-                display_name = get_static_data("champion", unit['character_id'], "name")
-                if display_name is None: continue
-                cost = get_static_data("champion", unit['character_id'], "tier")
-                icon = get_icon_path("champion", unit['character_id'])
-
-                champion_id = insert_champion(unit['character_id'], display_name, unit['tier'], cost, icon, composition_id)
+                ## Insert unit in database if it is a champion
+                try: champion_id = insert_champion(
+                     unit['character_id'],
+                     static_data[unit['character_id']]['name'],
+                     unit['tier'],
+                     static_data[unit['character_id']]['cost'],
+                     static_data[unit['character_id']]['icon'],
+                     composition_id )
+                except KeyError: continue
 
                 ## Get static data of the wearables of a champion and skip if it is not an item
                 for item in unit["itemNames"]:
-                    display_name = get_static_data("item", item, "name")
-                    if display_name is None: continue
-                    icon = get_icon_path("item", item)
-                    insert_item(item, display_name, icon, champion_id)
+                    try: insert_item( item,
+                                      static_data[item]['name'],
+                                      static_data[item]['icon'],
+                                      champion_id )
+                    except KeyError: continue
 
             for current_trait in participant["traits"]:
-                if current_trait['style'] > 0: continue
-                
-                ## Get static data of the trait
-                display_name = get_static_data("trait", current_trait['name'], "name")
-                icon = get_icon_path("trait", current_trait['name'])
-
-                insert_trait(current_trait['name'], display_name, current_trait['style'], current_trait['tier_current'], current_trait['tier_total'], icon, composition_id)
-
-    connection.commit()
-    connection.close()
+                if current_trait['style'] > 0:
+                    insert_trait( current_trait['name'],
+                                static_data[current_trait['name']]['name'],
+                                current_trait['style'],
+                                current_trait['tier_current'],
+                                current_trait['tier_total'],
+                                static_data[current_trait['name']]['icon'],
+                                composition_id )
     return None
 
 
@@ -94,6 +94,6 @@ def get_compositions(region, players_per_region, games_per_player, current_patch
 
         if matches is None: return 1
         
-        store_match_data(matches, current_patch, min_date_time, regional_routing_value, api_key)
+        store_match_data(matches, current_patch, min_date_time, regional_routing_value, region, api_key)
 
     return 0
