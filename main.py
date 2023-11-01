@@ -29,6 +29,13 @@ def composition_groups(avg_placement: Optional[float] = None, counter: Optional[
     sql = add_filters_to_sql("SELECT * FROM composition_group", filters)
     return get_sql_data(sql)
 
+
+@app.get("/compositions")
+def compositions(min_date_time: datetime = datetime(2023,10,25,0,0,0)):
+    print(min_date_time)
+    return get_sql_data(f"SELECT * FROM composition where match_time > '{min_date_time}'")
+
+
 @app.get("/composition_group/{composition_group_id}")
 def composition_group(composition_group_id: int = Path(description="The ID of the composition group", gt=0)):
     return get_sql_data(f"SELECT * FROM composition_group WHERE id={composition_group_id}")
@@ -39,10 +46,9 @@ def composition_load_data( region: str = "europe",
                            players_per_region: int = 5,
                            current_patch: str = "13.21",
                            ranked_league: str = "challenger",
-                           min_date_time: str = "2023-10-25 00:00:00"):
-    
-    casted_min_date_time =  datetime.strptime(min_date_time, '%Y-%m-%d %H:%M:%S')
-    rc = get_compositions(region, players_per_region, games_per_player, current_patch, ranked_league, casted_min_date_time)
+                           min_date_time: datetime = datetime(2023,10,25,0,0,0)):
+
+    rc = get_compositions(region, players_per_region, games_per_player, current_patch, ranked_league, min_date_time)
     if rc != 0: return {"Error": "Data could not be loaded"}
     return {"Success": "Data was loaded successfully"}
 
