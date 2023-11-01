@@ -13,6 +13,7 @@ CREATE TABLE composition (
     level INT NOT NULL,
     placement INT NOT NULL,
     patch VARCHAR(20) NOT NULL,
+    region VARCHAR(20) NOT NULL,
     match_time DATETIME NOT NULL
 );
 
@@ -82,6 +83,7 @@ def create_mysql_connection(host="localhost", user="root", password=None, databa
     return mysql.connector.connect(host=host, user=user, password=password, database=database)
 
 
+## TODO: Does not work
 def initialize_empty_database():
     connection = create_mysql_connection(database="mysql")
     cursor = connection.cursor()
@@ -181,11 +183,11 @@ def insert_trait(name, display_name, style, tier_current, tier_total, icon, comp
 
 
 ## Executes an insert query for a composition
-def insert_composition(match_id, level, placement, patch, match_time):
+def insert_composition(match_id, level, placement, patch, region, match_time):
     connection = create_mysql_connection()
     cursor = connection.cursor()
     try:
-        sql = f"INSERT INTO composition (match_id, level, placement, patch, match_time) VALUES ('{match_id}', '{level}', '{placement}', '{patch}', '{match_time}')"
+        sql = f"INSERT INTO composition (match_id, level, placement, patch, region, match_time) VALUES ('{match_id}', '{level}', '{placement}', '{patch}', '{region}', '{match_time}')"
         cursor.execute(sql)
         connection.commit()
         last_inserted_id = cursor.lastrowid
