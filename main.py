@@ -28,6 +28,15 @@ def composition_group( max_placement: Optional[int]     = Query(default= 4, desc
     return group_compositions_by_traits(max_placement, min_counter, min_datetime)
 
 
+@app.get("/composition_group/by_champion")
+def composition_group( max_placement: Optional[int]     = Query(default= 4, description="Considers only compositions, which placements are lower or equal this value", gt=0, le=8),
+                       min_counter: Optional[int]       = Query(default= 4, description="Considers only composition groups, which occured greater or equal this value", gt=0),
+                       min_datetime: Optional[datetime] = Query(default = fourteen_days_ago, description="Considers only matches that happened after this time")
+                      ):
+    
+    return group_compositions_by_champions(max_placement, min_counter, min_datetime)
+
+
 @app.post("/composition/load_data")
 def composition_load_data( region: Optional[str] = Query(default = "europe", description="Load only matches from this region. Valid options: 'europe' and 'korea'"),
                            players_amount: Optional[int] = Query(default = 5, description="Load this many players"),
