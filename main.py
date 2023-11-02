@@ -1,33 +1,16 @@
-from fastapi import FastAPI, Path
+from fastapi import FastAPI, Query
 from typing import Optional
 
 from core.models.mysql_utils import *
 from core.models.get_compositions import *
+from core.models.group_compositions import *
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = FastAPI()
 
-def add_filters_to_sql(sql, filters):
-    result_sql = sql
-    filter_count = len(filters)
-    if filter_count > 0: result_sql += " WHERE"
-
-    for i in range(0, filter_count):
-        result_sql += f" {filters[i]}"
-        if i < (filter_count - 1): result_sql += " AND"
-
-    return result_sql
-
-@app.get("/composition_groups")
-def composition_groups(avg_placement: Optional[float] = None, counter: Optional[int] = None, grouped_by: Optional[str] = None):
-    filters = []
-    if avg_placement is not None: filters.append(f"avg_placement <= {avg_placement}")
-    if counter is not None:       filters.append(f"counter >= {counter}")
-    if grouped_by is not None:    filters.append(f"grouped_by = '{grouped_by}'")
-    
-    sql = add_filters_to_sql("SELECT * FROM composition_group", filters)
-    return get_sql_data(sql)
+five_days_ago = datetime.now() - timedelta(days=5)
+fourteen_days_ago = datetime.now() - timedelta(days=14)
 
 
 @app.get("/compositions")
@@ -36,21 +19,28 @@ def compositions(min_date_time: datetime = datetime(2023,10,25,0,0,0)):
     return get_sql_data(f"SELECT * FROM composition where match_time > '{min_date_time}'")
 
 
-@app.get("/composition_group/{composition_group_id}")
-def composition_group(composition_group_id: int = Path(description="The ID of the composition group", gt=0)):
-    return get_sql_data(f"SELECT * FROM composition_group WHERE id={composition_group_id}")
+@app.get("/composition_group/by_trait")
+def composition_group( max_placement: Optional[int]     = Query(default= 4, description="Considers only compositions, which placements are lower or equal this value", gt=0, le=8),
+                       min_counter: Optional[int]       = Query(default= 4, description="Considers only composition groups, which occured greater or equal this value", gt=0),
+                       min_datetime: Optional[datetime] = Query(default = fourteen_days_ago, description="Considers only matches that happened after this time")
+                      ):
+    
+    return group_compositions_by_traits(max_placement, min_counter, min_datetime)
+
 
 @app.post("/composition/load_data")
-def composition_load_data( region: str = "europe", 
-                           games_per_player: int = 5,
-                           players_per_region: int = 5,
-                           current_patch: str = "13.21",
-                           ranked_league: str = "challenger",
-                           min_date_time: datetime = datetime(2023,10,25,0,0,0)):
+def composition_load_data( region: Optional[str] = Query(default = "europe", description="Load only matches from this region. Valid options: 'europe' and 'korea'"),
+                           players_amount: Optional[int] = Query(default = 5, description="Load this many players"),
+                           games_per_player: Optional[int] = Query(default = 5, description="Load this many games of each player"),
+                           current_patch: Optional[str] = Query(default = "13.21", description="Load only matches that happened after this time"),
+                           ranked_league: Optional[str] = Query(default = "challenger", description="Load only matches that happened after this time"),
+                           min_datetime: Optional[datetime] = Query(default = five_days_ago, description="Load only matches that happened after this time")
+                           ):
 
-    rc = get_compositions(region, players_per_region, games_per_player, current_patch, ranked_league, min_date_time)
+    rc = get_compositions(region, players_amount, games_per_player, current_patch, ranked_league, min_datetime)
     if rc != 0: return {"Error": "Data could not be loaded"}
     return {"Success": "Data was loaded successfully"}
+
 
 @app.post("/initialize_database")
 def initialize_database():
