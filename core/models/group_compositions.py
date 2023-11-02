@@ -49,37 +49,13 @@ from core.models.mysql_utils import *
     
 #     return result
 
-# def group_compositions(checkboxes, composition_groups, group_by):
-
-#     considered_regions = {}
-#     composition_groups_copy = composition_groups.copy()
-
-#     #for region in checkboxes["regions"]:
-#         #if checkboxes["regions"][region]:
-#             #if composition_groups_copy[region]["grouped_by"] != group_by:
-#                 #compositions = dissolve_composition_groups(composition_groups_copy[region]["database"])
-
-#                 # if group_by == "traits":
-#                 #     composition_groups_copy[region]["database"]     = group_compositions_by_traits(compositions)
-#                 #     composition_groups_copy[region]["grouped_by"]   = group_by
-#                 # elif group_by == "champions":
-#                 #     composition_groups_copy[region]["database"]     = group_compositions_by_champions(compositions)
-#                 #     composition_groups_copy[region]["grouped_by"]   = group_by
-#                 # elif group_by == "items":
-#                 #     composition_groups_copy[region]["database"]     = group_compositions_by_items(compositions)
-#                 #     composition_groups_copy[region]["grouped_by"]   = group_by
-#                 # else: return {}
-
-#             #considered_regions.update({region : composition_groups_copy[region]["database"]})
-
-#     return (considered_regions, composition_groups_copy)
 
 def group_compositions_by_traits(max_placement, min_counter, min_datetime):
-    trait_dict = {}
-
-    # Join compositions with traits
+    # Join compositions with traits and filter by parameters
     traits = get_sql_data(f"SELECT c.id AS composition_id, c.patch AS patch, t.display_name AS trait_name, t.style AS trait_style, c.placement AS placement, c.match_time AS match_time FROM composition c JOIN trait t ON c.id = t.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}' ORDER BY trait_name")
 
+    ## Loop over sql result and group the traits and placements by their composition_id
+    trait_dict = {}
     for trait in traits:
         try: trait_dict[trait['composition_id']]['trait_styles'].update( {trait['trait_name'] : trait['trait_style']} )
         except KeyError: trait_dict.update( { 
@@ -89,6 +65,8 @@ def group_compositions_by_traits(max_placement, min_counter, min_datetime):
                 }
             } )
 
+    ## Loop over the previously built dictionary and count similar occurences plus their placements.
+    ## Stored in new dictionary with traits as key and counters as value
     grouped_compositions = {}
     for composition_id, composition_data in trait_dict.items():
         placement = composition_data['placement']
@@ -99,8 +77,11 @@ def group_compositions_by_traits(max_placement, min_counter, min_datetime):
             grouped_compositions[trait_combination]['placement_counter'] += placement
         except KeyError: grouped_compositions.update( { trait_combination: {'counter': 1, 'placement_counter': placement} } )
 
+    ## Sort the dictionary, so that the most occurences are first.
+    ## If occurences are equal, put the one with lower placement counter above
     sorted_by_counter_and_placement = sorted(grouped_compositions.items(), key=lambda item: (item[1]["counter"], (-1 * item[1]["placement_counter"])), reverse=True)
 
+    ## Lastly loop over sorted dictionary, compute average placement and built a result dictionary for api
     result = []
     for trait_combination, combination_data in sorted_by_counter_and_placement:
         combination_data.update({
