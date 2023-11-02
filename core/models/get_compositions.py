@@ -58,7 +58,7 @@ def store_match_data(matches, current_patch, min_date_time, regional_routing_val
 
 
 
-def get_compositions(region, players_per_region, games_per_player, current_patch, ranked_league, min_date_time):
+def get_compositions(region, players_amount, games_per_player, current_patch, ranked_league, min_date_time):
     api_key = open("apikey.txt", "r").read()
 
     if region == "europe":
@@ -78,7 +78,7 @@ def get_compositions(region, players_per_region, games_per_player, current_patch
     if player_list is None: return 1
     
     player_list  = sort_players_by_rank(player_list)
-    best_players = player_list[0:players_per_region]
+    best_players = player_list[0:players_amount]
 
     for player in best_players:
         puuid = request_puuid_by_summonername( region        = platform_routing_value,
