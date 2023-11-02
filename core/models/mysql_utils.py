@@ -99,11 +99,11 @@ def initialize_empty_database():
 
 
 ## Executes sql query and returns result as dictionary
-def get_sql_data(sql, dictionary=True):
+def get_sql_data(sql, dictionary=True, multi=False):
     connection = create_mysql_connection()
     cursor = connection.cursor(dictionary=dictionary)
     try:
-        cursor.execute(sql)
+        cursor.execute(sql, multi=multi)
         data = cursor.fetchall()
         return data
     except mysql.connector.Error as err: print(f"Error: {err}")
