@@ -4,6 +4,7 @@ from typing import Optional
 from core.models.mysql_utils import *
 from core.models.get_compositions import *
 from core.models.group_compositions import *
+from core.models.get_placements import *
 
 from datetime import datetime, timedelta
 
