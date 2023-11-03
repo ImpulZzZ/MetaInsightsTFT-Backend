@@ -27,7 +27,7 @@ from core.models.mysql_utils import *
 
 def group_compositions_by_champions(max_placement, min_counter, min_datetime):
     # Join compositions with traits and filter by parameters
-    champions = get_sql_data(f"SELECT c.id AS composition_id, ch.display_name AS name, ch.tier AS tier, c.placement AS placement FROM composition c JOIN champion ch ON c.id = ch.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}' ORDER BY name")
+    champions = get_sql_data(f"SELECT c.id AS composition_id, ch.display_name AS name, ch.tier AS tier, c.placement AS placement FROM composition c JOIN champion ch ON c.id = ch.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}'")
 
     ## Loop over sql result and group the champions and placements by their composition_id
     champ_dict = {}
@@ -72,7 +72,7 @@ def group_compositions_by_champions(max_placement, min_counter, min_datetime):
 
 def group_compositions_by_traits(max_placement, min_counter, min_datetime):
     # Join compositions with traits and filter by parameters
-    traits = get_sql_data(f"SELECT c.id AS composition_id, t.display_name AS trait_name, t.style AS trait_style, c.placement AS placement FROM composition c JOIN trait t ON c.id = t.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}' ORDER BY trait_name")
+    traits = get_sql_data(f"SELECT c.id AS composition_id, t.display_name AS trait_name, t.style AS trait_style, c.placement AS placement FROM composition c JOIN trait t ON c.id = t.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}'")
 
     ## Loop over sql result and group the traits and placements by their composition_id
     trait_dict = {}
