@@ -99,8 +99,11 @@ def initialize_empty_database():
 
 
 ## Executes sql query and returns result as dictionary
-def get_sql_data(sql, dictionary=True, multi=False):
-    connection = create_mysql_connection()
+def get_sql_data(sql, dictionary=True, multi=False, connection=None):
+    standalone_connection = False
+    if connection is None:
+        connection = create_mysql_connection()
+        standalone_connection = True
     cursor = connection.cursor(dictionary=dictionary)
     try:
         cursor.execute(sql, multi=multi)
@@ -109,13 +112,16 @@ def get_sql_data(sql, dictionary=True, multi=False):
     except mysql.connector.Error as err: print(f"Error: {err}")
     finally:
         cursor.close()
-        connection.close()
+        if standalone_connection: connection.close()
     return None
 
 
 ## Executes sql query and returns result as dictionary
-def get_match_by_id(id, dictionary=False):
-    connection = create_mysql_connection()
+def get_match_by_id(id, dictionary=False, connection=None):
+    standalone_connection = False
+    if connection is None:
+        connection = create_mysql_connection()
+        standalone_connection = True
     cursor = connection.cursor(dictionary=dictionary)
     try:
         cursor.execute(f"SELECT * FROM composition where match_id='{id}'")
@@ -124,13 +130,16 @@ def get_match_by_id(id, dictionary=False):
     except mysql.connector.Error as err: print(f"Error: {err}")
     finally:
         cursor.close()
-        connection.close()
+        if standalone_connection: connection.close()
     return None
 
 
 ## Executes an insert query for a champion
-def insert_champion(name, display_name, tier, cost, icon, composition_id):
-    connection = create_mysql_connection()
+def insert_champion(name, display_name, tier, cost, icon, composition_id, connection=None):
+    standalone_connection = False
+    if connection is None:
+        connection = create_mysql_connection()
+        standalone_connection = True
     cursor = connection.cursor()
     escaped_display_name = display_name.replace("'", "\\\'")
     try:
@@ -142,13 +151,16 @@ def insert_champion(name, display_name, tier, cost, icon, composition_id):
     except mysql.connector.Error as err: print_error_message(sql, err)
     finally:
         cursor.close()
-        connection.close()
+        if standalone_connection: connection.close()
     return None
 
 
 ## Executes an insert query for a item
-def insert_item(name, display_name, icon, champion_id):
-    connection = create_mysql_connection()
+def insert_item(name, display_name, icon, champion_id, connection=None):
+    standalone_connection = False
+    if connection is None:
+        connection = create_mysql_connection()
+        standalone_connection = True
     cursor = connection.cursor()
     escaped_display_name = display_name.replace("'", "\\\'")
     try:
@@ -160,13 +172,16 @@ def insert_item(name, display_name, icon, champion_id):
     except mysql.connector.Error as err: print_error_message(sql, err)
     finally:
         cursor.close()
-        connection.close()
+        if standalone_connection: connection.close()
     return None
 
 
 ## Executes an insert query for a trait
-def insert_trait(name, display_name, style, tier_current, tier_total, icon, composition_id):
-    connection = create_mysql_connection()
+def insert_trait(name, display_name, style, tier_current, tier_total, icon, composition_id, connection=None):
+    standalone_connection = False
+    if connection is None:
+        connection = create_mysql_connection()
+        standalone_connection = True
     cursor = connection.cursor()
     escaped_display_name = display_name.replace("'", "\\\'")
     try:
@@ -178,13 +193,16 @@ def insert_trait(name, display_name, style, tier_current, tier_total, icon, comp
     except mysql.connector.Error as err: print_error_message(sql, err)
     finally:
         cursor.close()
-        connection.close()
+        if standalone_connection: connection.close()
     return None
 
 
 ## Executes an insert query for a composition
-def insert_composition(match_id, level, placement, patch, region, match_time):
-    connection = create_mysql_connection()
+def insert_composition(match_id, level, placement, patch, region, match_time, connection=None):
+    standalone_connection = False
+    if connection is None:
+        connection = create_mysql_connection()
+        standalone_connection = True
     cursor = connection.cursor()
     try:
         sql = f"INSERT INTO composition (match_id, level, placement, patch, region, match_time) VALUES ('{match_id}', '{level}', '{placement}', '{patch}', '{region}', '{match_time}')"
@@ -195,13 +213,16 @@ def insert_composition(match_id, level, placement, patch, region, match_time):
     except mysql.connector.Error as err: print_error_message(sql, err)
     finally:
         cursor.close()
-        connection.close()
+        if standalone_connection: connection.close()
     return None
 
 
 ## Executes an insert query for a composition_group
-def insert_composition_group(avg_placement, counter, grouped_by):
-    connection = create_mysql_connection()
+def insert_composition_group(avg_placement, counter, grouped_by, connection=None):
+    standalone_connection = False
+    if connection is None:
+        connection = create_mysql_connection()
+        standalone_connection = True
     cursor = connection.cursor()
     try:
         sql = f"INSERT INTO composition_group (avg_placement, counter, grouped_by ) VALUES ('{avg_placement}', '{counter}', '{grouped_by}')"
@@ -212,13 +233,16 @@ def insert_composition_group(avg_placement, counter, grouped_by):
     except mysql.connector.Error as err: print_error_message(sql, err)
     finally:
         cursor.close()
-        connection.close()
+        if standalone_connection: connection.close()
     return None
 
 
 ## Insert a new relationship entity between composition and composition group
-def insert_composition_group_composition(composition_id, composition_group_id):
-    connection = create_mysql_connection()
+def insert_composition_group_composition(composition_id, composition_group_id, connection=None):
+    standalone_connection = False
+    if connection is None:
+        connection = create_mysql_connection()
+        standalone_connection = True
     cursor = connection.cursor()
     try:
         sql = f"INSERT INTO composition_group_composition (composition_id, composition_group_id ) VALUES ('{composition_id}', '{composition_group_id}')"
@@ -229,5 +253,5 @@ def insert_composition_group_composition(composition_id, composition_group_id):
     except mysql.connector.Error as err: print_error_message(sql, err)
     finally:
         cursor.close()
-        connection.close()
+        if standalone_connection: connection.close()
     return None
