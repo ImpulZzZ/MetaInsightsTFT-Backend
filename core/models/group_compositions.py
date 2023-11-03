@@ -1,30 +1,5 @@
 from core.models.mysql_utils import *
 
-## Old version
-# def group_compositions_by_items(compositions):
-#     processed   = []
-#     result      = []
-#     num_comps   = len(compositions)
-    
-#     # loop over every composition
-#     for x in range(0, num_comps):
-
-#         # skip processed compositions
-#         if x in processed: continue
-
-#         # initialize new composition group with current composition
-#         current_comp_group = [compositions[x]]
-
-#         # compare each element x with y > x
-#         for y in range(x+1, num_comps):
-#             if compositions[x].champion_item_dict == compositions[y].champion_item_dict:
-#                 current_comp_group.append(compositions[y])
-#                 processed.append(y)
-                        
-#         result.append(CompositionGroup(current_comp_group))
-    
-#     return result
-
 def group_compositions_by_champions(max_placement, min_counter, min_datetime):
     # Join compositions with traits and filter by parameters
     champions = get_sql_data(f"SELECT c.id AS composition_id, ch.display_name AS name, ch.tier AS tier, c.placement AS placement FROM composition c JOIN champion ch ON c.id = ch.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}'")
@@ -112,3 +87,27 @@ def group_compositions_by_traits(max_placement, min_counter, min_datetime):
         if combination_data['counter'] >= min_counter: result.append(combination_data)
 
     return result
+
+
+def group_compositions_by_items(max_placement, min_datetime):
+    # Join compositions with champions and items, and filter by parameters
+    items = get_sql_data(f"SELECT c.id AS composition_id, i.display_name AS item_name, c.placement AS placement FROM composition c JOIN champion ch ON c.id = ch.composition_id JOIN item i ON ch.id = i.champion_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}' AND i.display_name != ''")
+
+    # Loop over sql result and group the items and placements by their composition_id
+    item_dict = {}
+    for item in items:
+        try: 
+            item_dict[item['item_name']]['counter'] += 1
+            item_dict[item['item_name']]['placement_counter'] += item['placement']
+        except KeyError: 
+            item_dict[item['item_name']] = {'counter': 1, 'placement_counter': item['placement']}
+
+    # Calculate average placement for each item, round it to 2 decimals and remove placement_counter
+    for item_name, item_data in item_dict.items():
+        item_data['avg_placement'] = round(item_data['placement_counter'] / item_data['counter'], 2)
+        del item_data['placement_counter']
+
+    # Sort the dictionary by average placement
+    sorted_items = sorted(item_dict.items(), key=lambda x: x[1]['avg_placement'])
+
+    return dict(sorted_items)
