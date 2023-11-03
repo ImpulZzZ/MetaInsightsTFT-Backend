@@ -45,10 +45,11 @@ def composition_load_data( region: Optional[str] = Query(default = "europe", des
                            ranked_league: Optional[str] = Query(default = "challenger", description="Load only matches that happened after this time"),
                            min_datetime: Optional[datetime] = Query(default = five_days_ago, description="Load only matches that happened after this time")
                            ):
-
-    rc = get_compositions(region, players_amount, games_per_player, current_patch, ranked_league, min_datetime)
-    if rc != 0: return {"Error": "Data could not be loaded"}
-    return {"Success": "Data was loaded successfully"}
+    start_time = datetime.now()
+    stored_matches = get_compositions(region, players_amount, games_per_player, current_patch, ranked_league, min_datetime)
+    if stored_matches is None: return {"Error": "Data could not be loaded"}
+    seconds = (datetime.now() - start_time).seconds
+    return {"Success": f"Data from {stored_matches} matches was loaded successfully in {seconds} seconds"}
 
 
 @app.post("/initialize_database")
