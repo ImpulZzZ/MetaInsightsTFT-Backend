@@ -13,13 +13,13 @@ five_days_ago = datetime.now() - timedelta(days=5)
 fourteen_days_ago = datetime.now() - timedelta(days=14)
 
 
-@app.get("/compositions")
-def compositions(min_date_time: datetime = datetime(2023,10,25,0,0,0)):
+@app.get("/composition/get-data")
+def composition_get_data(min_date_time: datetime = datetime(2023,10,25,0,0,0)):
     print(min_date_time)
     return get_sql_data(f"SELECT * FROM composition where match_time > '{min_date_time}'")
 
 
-@app.get("/composition_group/by_trait")
+@app.get("/compositionGroup/by-trait")
 def composition_group( max_placement: Optional[int]     = Query(default= 4, description="Considers only compositions, which placements are lower or equal this value", gt=0, le=8),
                        min_counter: Optional[int]       = Query(default= 4, description="Considers only composition groups, which occured greater or equal this value", gt=0),
                        min_datetime: Optional[datetime] = Query(default = fourteen_days_ago, description="Considers only matches that happened after this time")
@@ -28,7 +28,7 @@ def composition_group( max_placement: Optional[int]     = Query(default= 4, desc
     return group_compositions_by_traits(max_placement, min_counter, min_datetime)
 
 
-@app.get("/composition_group/by_champion")
+@app.get("/compositionGroup/by-champion")
 def composition_group( max_placement: Optional[int]     = Query(default= 4, description="Considers only compositions, which placements are lower or equal this value", gt=0, le=8),
                        min_counter: Optional[int]       = Query(default= 4, description="Considers only composition groups, which occured greater or equal this value", gt=0),
                        min_datetime: Optional[datetime] = Query(default = fourteen_days_ago, description="Considers only matches that happened after this time")
@@ -37,7 +37,7 @@ def composition_group( max_placement: Optional[int]     = Query(default= 4, desc
     return group_compositions_by_champions(max_placement, min_counter, min_datetime)
 
 
-@app.post("/composition/load_data")
+@app.post("/composition/load-data")
 def composition_load_data( region: Optional[str] = Query(default = "europe", description="Load only matches from this region. Valid options: 'europe' and 'korea'"),
                            players_amount: Optional[int] = Query(default = 5, description="Load this many players"),
                            games_per_player: Optional[int] = Query(default = 5, description="Load this many games of each player"),
@@ -50,8 +50,3 @@ def composition_load_data( region: Optional[str] = Query(default = "europe", des
     if stored_matches is None: return {"Error": "Data could not be loaded"}
     seconds = (datetime.now() - start_time).seconds
     return {"Success": f"Data from {stored_matches} matches was loaded successfully in {seconds} seconds"}
-
-
-@app.post("/initialize_database")
-def initialize_database():
-    return initialize_empty_database()
