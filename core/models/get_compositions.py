@@ -7,8 +7,10 @@ import re
 import datetime
 
 def store_match_data(matches, current_patch, min_date_time, regional_routing_value, region, api_key):
+    connection = create_mysql_connection()
     static_data = get_static_data()
 
+    match_counter = 0
     for match in matches:
         ## Check if a match was already stored in database and skip if yes
         if len(get_match_by_id(match)) > 0: continue
@@ -23,38 +25,46 @@ def store_match_data(matches, current_patch, min_date_time, regional_routing_val
         match_date_time = datetime.datetime.fromtimestamp((api_result["info"]["game_datetime"] // 1000))
         if min_date_time > match_date_time: continue
 
+        match_counter += 1
+
         for participant in api_result["info"]["participants"]:
-            composition_id = insert_composition(match, participant['level'], participant['placement'], patch, region, match_date_time)
+            composition_id = insert_composition(match, participant['level'], participant['placement'], patch, region, match_date_time, connection=connection)
 
             for unit in participant["units"]:
                 ## Insert unit in database if it is a champion
                 try: champion_id = insert_champion(
-                     unit['character_id'],
-                     static_data[unit['character_id']]['name'],
-                     unit['tier'],
-                     static_data[unit['character_id']]['cost'],
-                     static_data[unit['character_id']]['icon'],
-                     composition_id )
+                        unit['character_id'],
+                        static_data[unit['character_id']]['name'],
+                        unit['tier'],
+                        static_data[unit['character_id']]['cost'],
+                        static_data[unit['character_id']]['icon'],
+                        composition_id,
+                        connection = connection )
                 except KeyError: continue
 
                 ## Get static data of the wearables of a champion and skip if it is not an item
                 for item in unit["itemNames"]:
-                    try: insert_item( item,
-                                      static_data[item]['name'],
-                                      static_data[item]['icon'],
-                                      champion_id )
+                    try: insert_item(   
+                        item,
+                        static_data[item]['name'],
+                        static_data[item]['icon'],
+                        champion_id,
+                        connection = connection )
                     except KeyError: continue
 
             for current_trait in participant["traits"]:
                 if current_trait['style'] > 0:
-                    insert_trait( current_trait['name'],
-                                static_data[current_trait['name']]['name'],
-                                current_trait['style'],
-                                current_trait['tier_current'],
-                                current_trait['tier_total'],
-                                static_data[current_trait['name']]['icon'],
-                                composition_id )
-    return None
+                    insert_trait( 
+                        current_trait['name'],
+                        static_data[current_trait['name']]['name'],
+                        current_trait['style'],
+                        current_trait['tier_current'],
+                        current_trait['tier_total'],
+                        static_data[current_trait['name']]['icon'],
+                        composition_id,
+                        connection = connection )
+    connection.close()
+    return match_counter
 
 
 
@@ -75,7 +85,7 @@ def get_compositions(region, players_amount, games_per_player, current_patch, ra
                                              api_key       = api_key,
                                              ranked_league = ranked_league )
 
-    if player_list is None: return 1
+    if player_list is None: return None
     
     player_list  = sort_players_by_rank(player_list)
     best_players = player_list[0:players_amount]
@@ -85,15 +95,14 @@ def get_compositions(region, players_amount, games_per_player, current_patch, ra
                                                api_key       = api_key,
                                                summoner_name = player["summonerName"] )
 
-        if puuid is None: return 1
+        if puuid is None: return None
                                                     
         matches = request_matches_by_puuid( region  = regional_routing_value,
                                             api_key = api_key,
                                             puuid   = puuid,
                                             count   = games_per_player )
 
-        if matches is None: return 1
-        
-        store_match_data(matches, current_patch, min_date_time, regional_routing_value, region, api_key)
+        if matches is None: return None
 
-    return 0
+    ## Store matches in database and return count of stored matches
+    return store_match_data(matches, current_patch, min_date_time, regional_routing_value, region, api_key)
