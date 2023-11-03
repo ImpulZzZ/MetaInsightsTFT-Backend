@@ -42,7 +42,7 @@ def composition_group_by_champion(
 
 @app.get("/item/placements")
 def item_placements(
-    item_name: Optional[str] = Query(default = None, description="Name of the item to get placements for", ),
+    item_name: Optional[str] = Query(default = None, description="Name of the item to get placements for. If left blank, all items are returned", ),
     max_placement: Optional[int] = Query(default= 4, description="Considers only compositions, which placements are lower or equal this value", ge=1, le=8),
     min_counter: Optional[int] = Query(default= 4, description="Considers only composition groups, which occured greater or equal this value", ge=1),
     min_datetime: Optional[datetime] = Query(default = fourteen_days_ago, description="Considers only matches that happened after this time")
@@ -50,6 +50,23 @@ def item_placements(
     
     return get_item_placements(item_name, max_placement, min_counter, min_datetime)
 
+
+@app.get("/champion/placements")
+def champion_placements(
+    champion_name: Optional[str] = Query(default = None, description="Name of the champion to get placements for. If left blank, all champions are returned", ),
+    max_placement: Optional[int] = Query(default= 4, description="Considers only compositions, which placements are lower or equal this value", ge=1, le=8),
+    min_datetime: Optional[datetime] = Query(default = fourteen_days_ago, description="Considers only matches that happened after this time")
+    ):
+    return get_champion_placements(champion_name, max_placement, min_datetime)
+
+
+@app.get("/trait/placements")
+def trait_placements(
+    trait_name: Optional[str] = Query(default = None, description="Name of the trait to get placements for. If left blank, all traits are returned", ),
+    max_placement: Optional[int] = Query(default= 4, description="Considers only compositions, which placements are lower or equal this value", ge=1, le=8),
+    min_datetime: Optional[datetime] = Query(default = fourteen_days_ago, description="Considers only matches that happened after this time")
+):
+    return get_trait_placements(trait_name, max_placement, min_datetime)
 
 @app.post("/composition/load-data")
 def composition_load_data( region: Optional[str] = Query(default = "europe", description="Load only matches from this region. Valid options: 'europe' and 'korea'"),
