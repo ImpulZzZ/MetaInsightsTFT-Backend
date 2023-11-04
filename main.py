@@ -2,6 +2,7 @@ from fastapi import FastAPI, Query
 from typing import Optional
 
 from core.models.mysql_utils import *
+from core.models.load_compositions import *
 from core.models.get_compositions import *
 from core.models.group_compositions import *
 from core.models.get_placements import *
@@ -17,11 +18,17 @@ MAX_AVG_PLACEMENT_QUERY = Query(default=4,                 description="Consider
 MAX_PLACEMENT_QUERY     = Query(default=4,                 description="Considers only compositions, which placements are lower or equal this value", ge=1, le=8)
 MIN_COUNTER_QUERY       = Query(default=4,                 description="Considers only compositions, which occured greater or equal this value",      ge=1)
 MIN_DATETIME_QUERY      = Query(default=fourteen_days_ago, description="Considers only matches that happened after this time")
+REGION_QUERY            = Query(default="europe",          description="Considers only matches of this region", regex="^(europe|korea)$")
+PATCH_QUERY             = Query(default="13.21",           description="Considers only matches of this patch",  regex="^([0-9]{1,2}\.[0-9]{1,2})$")
 
 @app.get("/composition/get-data")
-def composition_get_data(min_date_time: datetime = datetime(2023,10,25,0,0,0)):
-    print(min_date_time)
-    return get_sql_data(f"SELECT * FROM composition where match_time > '{min_date_time}'")
+def composition_get_data(
+    composition_id: Optional[int] = Query(default=None, description="Considers only compositions with this id"),
+    match_id: Optional[str] = Query(default=None, description="Considers only compositions from this match"),
+    patch: Optional[str] = PATCH_QUERY,
+    region: Optional[str] = REGION_QUERY
+    ):
+    return get_compositions(composition_id, match_id, patch, region)
 
 
 @app.get("/compositionGroup/by-trait")
@@ -77,15 +84,15 @@ def trait_placements(
     return get_trait_placements(trait_name, max_placement, min_datetime)
 
 @app.post("/composition/load-data")
-def composition_load_data( region: Optional[str] = Query(default = "europe", description="Load only matches from this region", regex="^(europe|korea)$"),
+def composition_load_data( region: Optional[str] = REGION_QUERY,
                            players_amount: Optional[int] = Query(default = 5, description="Load this many players", ge=0, le=100),
                            games_per_player: Optional[int] = Query(default = 5, description="Load this many games of each player", ge=0, le=100),
-                           current_patch: Optional[str] = Query(default = "13.21", description="Load only matches of this patch", regex="^([0-9]{1,2}\.[0-9]{1,2})$"),
+                           current_patch: Optional[str] = PATCH_QUERY,
                            ranked_league: Optional[str] = Query(default = "challenger", description="Load only matches in this ranked league", regex="^(challenger|grandmaster|master)$"),
                            min_datetime: Optional[datetime] = Query(default = five_days_ago, description="Load only matches that happened after this time")
                            ):
     start_time = datetime.now()
-    stored_matches = get_compositions(region, players_amount, games_per_player, current_patch, ranked_league, min_datetime)
+    stored_matches = load_compositions(region, players_amount, games_per_player, current_patch, ranked_league, min_datetime)
     if stored_matches is None: return {"Error": "Data could not be loaded"}
     seconds = (datetime.now() - start_time).seconds
     return {"Success": f"Data from {stored_matches} matches was loaded successfully in {seconds} seconds"}
