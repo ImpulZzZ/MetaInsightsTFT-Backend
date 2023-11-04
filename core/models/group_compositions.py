@@ -1,4 +1,5 @@
 from core.models.mysql_utils import *
+import itertools
 
 def group_compositions_by_champions(max_placement, min_counter, min_datetime):
     # Join compositions with traits and filter by parameters
@@ -45,9 +46,11 @@ def group_compositions_by_champions(max_placement, min_counter, min_datetime):
     return result
 
 
-def group_compositions_by_traits(max_placement, min_counter, min_datetime):
+def group_compositions_by_traits(max_placement, max_avg_placement, min_counter, min_datetime, trait_name=None, n_traits=None, ignore_single_unit_traits=False):
     # Join compositions with traits and filter by parameters
-    traits = get_sql_data(f"SELECT c.id AS composition_id, t.display_name AS trait_name, t.style AS trait_style, c.placement AS placement FROM composition c JOIN trait t ON c.id = t.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}'")
+    sql = f"SELECT c.id AS composition_id, t.display_name AS trait_name, t.style AS trait_style, c.placement AS placement FROM composition c JOIN trait t ON c.id = t.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}'"
+    if ignore_single_unit_traits: sql += " AND t.tier_total != 1"
+    traits = get_sql_data(sql)
 
     ## Loop over sql result and group the traits and placements by their composition_id
     trait_dict = {}
@@ -65,12 +68,30 @@ def group_compositions_by_traits(max_placement, min_counter, min_datetime):
     grouped_compositions = {}
     for composition_id, composition_data in trait_dict.items():
         placement = composition_data['placement']
-        trait_combination = frozenset(composition_data['trait_styles'].items())  # Use frozenset to make it hashable
+        trait_combinations = []
 
-        try:
-            grouped_compositions[trait_combination]['counter'] += 1
-            grouped_compositions[trait_combination]['placement_counter'] += placement
-        except KeyError: grouped_compositions.update( { trait_combination: {'counter': 1, 'placement_counter': placement} } )
+        if trait_name is not None:
+            try: composition_data['trait_styles'][trait_name]
+            except KeyError: continue
+
+        ## If n_traits is set, limit the combination length to n_traits and build all possible combinations. Use frozenset to make it hashable as key
+        if n_traits is not None:
+            n_trait_combinations = itertools.combinations(composition_data['trait_styles'].items(), n_traits)
+            for trait_combination in n_trait_combinations:
+                if trait_name is not None:
+                    try: dict(trait_combination)[trait_name]
+                    except KeyError: continue
+                trait_combinations.append(frozenset(trait_combination))
+                    
+                
+        ## Per default, do not limit the combination length and use all traits
+        else: trait_combinations.append(frozenset(composition_data['trait_styles'].items()))
+
+        for trait_combination in trait_combinations:
+            try:
+                grouped_compositions[trait_combination]['counter'] += 1
+                grouped_compositions[trait_combination]['placement_counter'] += placement
+            except KeyError: grouped_compositions.update( { trait_combination: {'counter': 1, 'placement_counter': placement} } )
 
     ## Sort the dictionary, so that the most occurences are first.
     ## If occurences are equal, put the one with lower placement counter above
@@ -79,9 +100,11 @@ def group_compositions_by_traits(max_placement, min_counter, min_datetime):
     ## Lastly loop over sorted dictionary, compute average placement and built a result dictionary for api
     result = []
     for trait_combination, combination_data in sorted_by_counter_and_placement:
+        avg_placement = round(combination_data['placement_counter'] / combination_data['counter'], 2)
+        if avg_placement > max_avg_placement: continue
         combination_data.update({
             'trait_styles': dict(trait_combination),
-            'avg_placement': round(combination_data['placement_counter'] / combination_data['counter'], 2)
+            'avg_placement': avg_placement
             })
         del combination_data['placement_counter']
         if combination_data['counter'] >= min_counter: result.append(combination_data)
