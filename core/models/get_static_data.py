@@ -20,7 +20,7 @@ def get_static_data():
                     current: {
                         'id': data[current]['id'],
                         'name': data[current]['name'],
-                        'icon': f"{DATA_HOME_DIR}/{DATA_VERSION}/img/{entity_type}/{data[current]['image']['full']}"
+                        'icon': f"/img/{entity_type}/{data[current]['image']['full']}"
                         }
                    }
                 ## champions have with 'cost' an additional static value
