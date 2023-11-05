@@ -2,7 +2,6 @@ from core.models.mysql_utils import *
 #from mysql_utils import *
 
 def build_sql_query(args):
-    print(args.items())
     base_query = "SELECT * FROM composition"
 
     conditions = []
