@@ -1,4 +1,5 @@
 import json
+from core.models.mysql_utils import *
 
 DATA_VERSION  = "13.18.1"
 DATA_HOME_DIR = "Set9_5_data"
@@ -27,3 +28,26 @@ def get_static_data():
                 if entity_type == 'tft-champion': current_dict[current].update({'cost': data[current]['tier']})
                 result.update(current_dict)
     return result
+
+
+def build_sql_query(args, table_name):
+    base_query = f"SELECT DISTINCT name, display_name, icon FROM {table_name}"
+
+    conditions = []
+    for key, value in args.items():
+        if value is not None:
+            conditions.append(f"{key} = '{value}'")
+
+    if conditions:
+        base_query += " WHERE " + " AND ".join(conditions)
+
+    return base_query
+
+
+def get_icons(name, display_name, table_name):
+    args = {
+        'name': name,
+        'display_name': display_name
+    }
+    sql = build_sql_query(args, table_name)
+    return get_sql_data(sql)
