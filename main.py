@@ -6,6 +6,7 @@ from core.models.load_compositions import *
 from core.models.get_compositions import *
 from core.models.group_compositions import *
 from core.models.get_placements import *
+from core.models.get_icons import *
 
 from datetime import datetime, timedelta
 
@@ -66,6 +67,14 @@ def item_placements(
     return get_item_placements(item_name, max_placement, min_counter, min_datetime)
 
 
+@app.get("/item/icons")
+def item_icons(
+    name: Optional[str] = Query(default = None, description="Name of the item to get icon path for"),
+    display_name: Optional[str] = Query(default = None, description="Display name of the item to get icon path for")
+):
+    return get_icons(name, display_name, "item")
+
+
 @app.get("/champion/placements")
 def champion_placements(
     champion_name: Optional[str] = Query(default = None, description="Name of the champion to get placements for. If left blank, all champions are returned"),
@@ -73,6 +82,13 @@ def champion_placements(
     min_datetime: Optional[datetime] = MIN_DATETIME_QUERY
     ):
     return get_champion_placements(champion_name, max_placement, min_datetime)
+
+@app.get("/champion/icons")
+def champion_icons(
+    name: Optional[str] = Query(default = None, description="Name of the champion to get icon path for"),
+    display_name: Optional[str] = Query(default = None, description="Display name of the champion to get icon path for")
+):
+    return get_icons(name, display_name, "champion")
 
 
 @app.get("/trait/placements")
@@ -82,6 +98,15 @@ def trait_placements(
     min_datetime: Optional[datetime] = MIN_DATETIME_QUERY
 ):
     return get_trait_placements(trait_name, max_placement, min_datetime)
+
+
+@app.get("/trait/icons")
+def trait_icons(
+    name: Optional[str] = Query(default = None, description="Name of the trait to get icon path for"),
+    display_name: Optional[str] = Query(default = None, description="Display name of the trait to get icon path for")
+):
+    return get_icons(name, display_name, "trait")
+
 
 @app.post("/composition/load-data")
 def composition_load_data( region: Optional[str] = REGION_QUERY,
