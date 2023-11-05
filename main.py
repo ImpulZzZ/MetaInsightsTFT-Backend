@@ -6,7 +6,7 @@ from core.models.load_compositions import *
 from core.models.get_compositions import *
 from core.models.group_compositions import *
 from core.models.get_placements import *
-from core.models.get_icons import *
+from core.models.get_static_data import *
 
 from datetime import datetime, timedelta
 
