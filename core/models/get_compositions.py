@@ -15,12 +15,13 @@ def build_sql_query(args):
     return base_query
 
 
-def get_compositions(composition_id, match_id, patch, region):
+def get_compositions(composition_id, match_id, patch, region, league):
     args = {
         'id': composition_id,
         'match_id': match_id,
         'patch': patch,
-        'region': region
+        'region': region,
+        'league': league
     }
     sql = build_sql_query(args)
     print(sql)
