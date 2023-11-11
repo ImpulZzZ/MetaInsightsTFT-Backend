@@ -19,9 +19,11 @@ MAX_AVG_PLACEMENT_QUERY = Query(default=4,                 description="Consider
 MAX_PLACEMENT_QUERY     = Query(default=4,                 description="Considers only compositions, which placements are lower or equal this value", ge=1, le=8)
 MIN_COUNTER_QUERY       = Query(default=4,                 description="Considers only compositions, which occured greater or equal this value",      ge=1)
 MIN_DATETIME_QUERY      = Query(default=fourteen_days_ago, description="Considers only matches that happened after this time")
-REGION_QUERY            = Query(default="europe",          description="Considers only matches of this region", regex="^(europe|korea)$")
+REGION_QUERY            = Query(default="europe",          description="Considers only matches of this region (loading korea needs more time)", regex="^(europe|korea)$")
 LEAGUE_QUERY            = Query(default="challenger",      description="Considers only matches of this league", regex="^(challenger|grandmaster|master)$")
 PATCH_QUERY             = Query(default="13.22",           description="Considers only matches of this patch",  regex="^([0-9]{1,2}\.[0-9]{1,2})$")
+
+## TODO: Add possibility to show both challenger and grandmaster matches and both regions
 
 @app.get("/composition/get-data")
 def composition_get_data(
@@ -124,8 +126,8 @@ def trait_icons(
 
 @app.post("/composition/load-data")
 def composition_load_data( region: Optional[str] = REGION_QUERY,
-                           players_amount: Optional[int] = Query(default = 5, description="Load this many players", ge=0, le=100),
-                           games_per_player: Optional[int] = Query(default = 5, description="Load this many games of each player", ge=0, le=100),
+                           players_amount: Optional[int] = Query(default = 5, description="Load this many players", ge=0, le=200),
+                           games_per_player: Optional[int] = Query(default = 5, description="Load this many games of each player", ge=0, le=50),
                            current_patch: Optional[str] = PATCH_QUERY,
                            ranked_league: Optional[str] = LEAGUE_QUERY,
                            min_datetime: Optional[datetime] = Query(default = five_days_ago, description="Load only matches that happened after this time")

@@ -61,16 +61,18 @@ def store_match_data(matches, current_patch, min_date_time, regional_routing_val
                     except KeyError: continue
 
             for current_trait in participant["traits"]:
-                if current_trait['style'] > 0:
-                    insert_trait( 
-                        current_trait['name'],
-                        static_data[current_trait['name']]['name'],
-                        current_trait['style'],
-                        current_trait['tier_current'],
-                        current_trait['tier_total'],
-                        static_data[current_trait['name']]['icon'],
-                        composition_id,
-                        connection = connection )
+                try:
+                    if current_trait['style'] > 0:
+                        insert_trait( 
+                            current_trait['name'],
+                            static_data[current_trait['name']]['name'],
+                            current_trait['style'],
+                            current_trait['tier_current'],
+                            current_trait['tier_total'],
+                            static_data[current_trait['name']]['icon'],
+                            composition_id,
+                            connection = connection )
+                except KeyError: continue
     connection.close()
     return match_counter
 
