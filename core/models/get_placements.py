@@ -1,8 +1,8 @@
 from core.models.mysql_utils import *
 
-def get_item_placements(item_name, max_placement, min_counter, min_datetime):
+def get_item_placements(item_name, region, league, max_placement, min_counter, min_datetime):
     # Join compositions with champions and items, and filter by parameters
-    sql = f"SELECT c.id AS composition_id, i.display_name AS item_name, c.placement AS placement FROM composition c JOIN champion ch ON c.id = ch.composition_id JOIN item i ON ch.id = i.champion_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}' AND i.display_name != ''"
+    sql = f"SELECT c.id AS composition_id, i.display_name AS item_name, c.placement AS placement FROM composition c JOIN champion ch ON c.id = ch.composition_id JOIN item i ON ch.id = i.champion_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}' AND i.display_name != '' AND c.league = '{league}' AND c.region = '{region}'"
     if item_name is not None: sql += f" AND i.display_name = '{item_name}'"
     items = get_sql_data(sql)
 
@@ -30,9 +30,9 @@ def get_item_placements(item_name, max_placement, min_counter, min_datetime):
     return dict(sorted_items)
 
 
-def get_champion_placements(champion_name, max_placement, min_datetime):
+def get_champion_placements(champion_name, region, league, max_placement, min_datetime):
     # Join compositions with champions, and filter by parameters
-    sql = f"SELECT c.id AS composition_id, ch.display_name AS champion_name, ch.tier AS champion_tier, c.placement AS placement FROM composition c JOIN champion ch ON c.id = ch.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}'"
+    sql = f"SELECT c.id AS composition_id, ch.display_name AS champion_name, ch.tier AS champion_tier, c.placement AS placement FROM composition c JOIN champion ch ON c.id = ch.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}' AND c.league = '{league}' AND c.region = '{region}'"
     if champion_name is not None: sql += f" AND ch.display_name = '{champion_name}'"
     champions = get_sql_data(sql)
 
@@ -57,9 +57,9 @@ def get_champion_placements(champion_name, max_placement, min_datetime):
     return champion_dict
 
 
-def get_trait_placements(trait_name, max_placement, min_datetime):
+def get_trait_placements(trait_name, region, league, max_placement, min_datetime):
     # Join compositions with champions, and filter by parameters
-    sql = f"SELECT c.id AS composition_id, t.display_name AS trait_name, t.style AS trait_style, c.placement AS placement FROM composition c JOIN trait t ON c.id = t.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}'"
+    sql = f"SELECT c.id AS composition_id, t.display_name AS trait_name, t.style AS trait_style, c.placement AS placement FROM composition c JOIN trait t ON c.id = t.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}' AND c.league = '{league}' AND c.region = '{region}'"
     if trait_name is not None: sql += f" AND ch.display_name = '{trait_name}'"
     traits = get_sql_data(sql)
 
