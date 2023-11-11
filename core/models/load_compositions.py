@@ -6,7 +6,7 @@ from core.models.get_static_data import *
 import re
 import datetime
 
-def store_match_data(matches, current_patch, min_date_time, regional_routing_value, region, api_key):
+def store_match_data(matches, current_patch, min_date_time, regional_routing_value, region, ranked_league, api_key):
     connection  = create_mysql_connection()
     static_data = get_static_data()
 
@@ -36,7 +36,7 @@ def store_match_data(matches, current_patch, min_date_time, regional_routing_val
         match_counter += 1
 
         for participant in api_result["info"]["participants"]:
-            composition_id = insert_composition(match, participant['level'], participant['placement'], patch, region, match_date_time, connection=connection)
+            composition_id = insert_composition(match, participant['level'], participant['placement'], patch, region, ranked_league, match_date_time, connection=connection)
 
             for unit in participant["units"]:
                 ## Insert unit in database if it is a champion
@@ -104,7 +104,7 @@ def load_compositions(region, players_amount, games_per_player, current_patch, r
                                                api_key       = api_key,
                                                summoner_name = player["summonerName"] )
 
-        if puuid is None: return None
+        if puuid is None: continue
                                                     
         matches = request_matches_by_puuid( region     = regional_routing_value,
                                             api_key    = api_key,
@@ -118,6 +118,6 @@ def load_compositions(region, players_amount, games_per_player, current_patch, r
         if matches is None: return None
 
         ## Store matches in database and return count of stored matches
-        stored_matches += store_match_data(matches, current_patch, min_date_time, regional_routing_value, region, api_key)
+        stored_matches += store_match_data(matches, current_patch, min_date_time, regional_routing_value, region, ranked_league, api_key)
    
     return stored_matches
