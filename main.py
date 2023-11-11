@@ -20,7 +20,7 @@ MAX_PLACEMENT_QUERY     = Query(default=4,                 description="Consider
 MIN_COUNTER_QUERY       = Query(default=4,                 description="Considers only compositions, which occured greater or equal this value",      ge=1)
 MIN_DATETIME_QUERY      = Query(default=fourteen_days_ago, description="Considers only matches that happened after this time")
 REGION_QUERY            = Query(default="europe",          description="Considers only matches of this region", regex="^(europe|korea)$")
-PATCH_QUERY             = Query(default="13.21",           description="Considers only matches of this patch",  regex="^([0-9]{1,2}\.[0-9]{1,2})$")
+PATCH_QUERY             = Query(default="13.22",           description="Considers only matches of this patch",  regex="^([0-9]{1,2}\.[0-9]{1,2})$")
 
 @app.get("/composition/get-data")
 def composition_get_data(
@@ -40,20 +40,22 @@ def composition_group_by_trait(
     max_placement: Optional[int] = MAX_PLACEMENT_QUERY,
     max_avg_placement: Optional[float] = MAX_AVG_PLACEMENT_QUERY,
     min_counter: Optional[int] = MIN_COUNTER_QUERY,
+    patch: Optional[str] = PATCH_QUERY,
     min_datetime: Optional[datetime] = MIN_DATETIME_QUERY
     ):
     
-    return group_compositions_by_traits(max_placement, max_avg_placement, min_counter, min_datetime, trait_name, n_traits, ignore_single_unit_traits)
+    return group_compositions_by_traits(patch, max_placement, max_avg_placement, min_counter, min_datetime, trait_name, n_traits, ignore_single_unit_traits)
 
 
 @app.get("/compositionGroup/by-champion")
 def composition_group_by_champion(
     max_placement: Optional[int] = MAX_PLACEMENT_QUERY,
     min_counter: Optional[int] = MIN_COUNTER_QUERY,
+    patch: Optional[str] = PATCH_QUERY,
     min_datetime: Optional[datetime] = MIN_DATETIME_QUERY
     ):
     
-    return group_compositions_by_champions(max_placement, min_counter, min_datetime)
+    return group_compositions_by_champions(patch, max_placement, min_counter, min_datetime)
 
 
 @app.get("/item/placements")
