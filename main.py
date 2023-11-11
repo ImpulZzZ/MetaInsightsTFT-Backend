@@ -20,6 +20,7 @@ MAX_PLACEMENT_QUERY     = Query(default=4,                 description="Consider
 MIN_COUNTER_QUERY       = Query(default=4,                 description="Considers only compositions, which occured greater or equal this value",      ge=1)
 MIN_DATETIME_QUERY      = Query(default=fourteen_days_ago, description="Considers only matches that happened after this time")
 REGION_QUERY            = Query(default="europe",          description="Considers only matches of this region", regex="^(europe|korea)$")
+LEAGUE_QUERY            = Query(default="challenger",      description="Considers only matches of this league", regex="^(challenger|grandmaster|master)$")
 PATCH_QUERY             = Query(default="13.22",           description="Considers only matches of this patch",  regex="^([0-9]{1,2}\.[0-9]{1,2})$")
 
 @app.get("/composition/get-data")
@@ -27,9 +28,10 @@ def composition_get_data(
     composition_id: Optional[int] = Query(default=None, description="Considers only compositions with this id"),
     match_id: Optional[str] = Query(default=None, description="Considers only compositions from this match"),
     patch: Optional[str] = PATCH_QUERY,
-    region: Optional[str] = REGION_QUERY
+    region: Optional[str] = REGION_QUERY,
+    league: Optional[str] = LEAGUE_QUERY
     ):
-    return get_compositions(composition_id, match_id, patch, region)
+    return get_compositions(composition_id, match_id, patch, region, league)
 
 
 @app.get("/compositionGroup/by-trait")
@@ -41,10 +43,12 @@ def composition_group_by_trait(
     max_avg_placement: Optional[float] = MAX_AVG_PLACEMENT_QUERY,
     min_counter: Optional[int] = MIN_COUNTER_QUERY,
     patch: Optional[str] = PATCH_QUERY,
+    region: Optional[str] = REGION_QUERY,
+    league: Optional[str] = LEAGUE_QUERY,
     min_datetime: Optional[datetime] = MIN_DATETIME_QUERY
     ):
     
-    return group_compositions_by_traits(patch, max_placement, max_avg_placement, min_counter, min_datetime, trait_name, n_traits, ignore_single_unit_traits)
+    return group_compositions_by_traits(patch, region, league, max_placement, max_avg_placement, min_counter, min_datetime, trait_name, n_traits, ignore_single_unit_traits)
 
 
 @app.get("/compositionGroup/by-champion")
@@ -52,21 +56,25 @@ def composition_group_by_champion(
     max_placement: Optional[int] = MAX_PLACEMENT_QUERY,
     min_counter: Optional[int] = MIN_COUNTER_QUERY,
     patch: Optional[str] = PATCH_QUERY,
+    region: Optional[str] = REGION_QUERY,
+    league: Optional[str] = LEAGUE_QUERY,
     min_datetime: Optional[datetime] = MIN_DATETIME_QUERY
     ):
     
-    return group_compositions_by_champions(patch, max_placement, min_counter, min_datetime)
+    return group_compositions_by_champions(patch, region, league, max_placement, min_counter, min_datetime)
 
 
 @app.get("/item/placements")
 def item_placements(
     item_name: Optional[str] = Query(default = None, description="Name of the item to get placements for. If left blank, all items are returned" ),
     max_placement: Optional[int] = MAX_PLACEMENT_QUERY,
+    region: Optional[str] = REGION_QUERY,
+    league: Optional[str] = LEAGUE_QUERY,
     min_counter: Optional[int] = MIN_COUNTER_QUERY,
     min_datetime: Optional[datetime] = MIN_DATETIME_QUERY
     ):
     
-    return get_item_placements(item_name, max_placement, min_counter, min_datetime)
+    return get_item_placements(item_name, region, league, max_placement, min_counter, min_datetime)
 
 
 @app.get("/item/icons")
@@ -80,10 +88,12 @@ def item_icons(
 @app.get("/champion/placements")
 def champion_placements(
     champion_name: Optional[str] = Query(default = None, description="Name of the champion to get placements for. If left blank, all champions are returned"),
+    region: Optional[str] = REGION_QUERY,
+    league: Optional[str] = LEAGUE_QUERY,
     max_placement: Optional[int] = MAX_PLACEMENT_QUERY,
     min_datetime: Optional[datetime] = MIN_DATETIME_QUERY
     ):
-    return get_champion_placements(champion_name, max_placement, min_datetime)
+    return get_champion_placements(champion_name, region, league, max_placement, min_datetime)
 
 @app.get("/champion/icons")
 def champion_icons(
@@ -96,10 +106,12 @@ def champion_icons(
 @app.get("/trait/placements")
 def trait_placements(
     trait_name: Optional[str] = Query(default = None, description="Name of the trait to get placements for. If left blank, all traits are returned"),
+    region: Optional[str] = REGION_QUERY,
+    league: Optional[str] = LEAGUE_QUERY,
     max_placement: Optional[int] = MAX_PLACEMENT_QUERY,
     min_datetime: Optional[datetime] = MIN_DATETIME_QUERY
 ):
-    return get_trait_placements(trait_name, max_placement, min_datetime)
+    return get_trait_placements(trait_name, region, league, max_placement, min_datetime)
 
 
 @app.get("/trait/icons")
@@ -115,7 +127,7 @@ def composition_load_data( region: Optional[str] = REGION_QUERY,
                            players_amount: Optional[int] = Query(default = 5, description="Load this many players", ge=0, le=100),
                            games_per_player: Optional[int] = Query(default = 5, description="Load this many games of each player", ge=0, le=100),
                            current_patch: Optional[str] = PATCH_QUERY,
-                           ranked_league: Optional[str] = Query(default = "challenger", description="Load only matches in this ranked league", regex="^(challenger|grandmaster|master)$"),
+                           ranked_league: Optional[str] = LEAGUE_QUERY,
                            min_datetime: Optional[datetime] = Query(default = five_days_ago, description="Load only matches that happened after this time")
                            ):
     start_time = datetime.now()
