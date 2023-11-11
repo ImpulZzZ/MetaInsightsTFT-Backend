@@ -7,14 +7,22 @@ import re
 import datetime
 
 def store_match_data(matches, current_patch, min_date_time, regional_routing_value, region, api_key):
-    connection = create_mysql_connection()
+    connection  = create_mysql_connection()
     static_data = get_static_data()
+
+    ## Build string of match ids for sql query
+    match_list_string = ""
+    for match in matches: match_list_string += f"'{match}',"
+    match_list_string = match_list_string[:-1]
+
+    ## Get all matches that are already stored in database
+    sql_result = get_sql_data(f"SELECT DISTINCT match_id FROM composition where match_id in ({match_list_string})", dictionary=False, connection=connection)
+    known_matches = [x[0] for x in sql_result]
 
     match_counter = 0
     for match in matches:
         ## Check if a match was already stored in database and skip if yes
-        if len(get_match_by_id(match)) > 0: continue
-
+        if match in known_matches: continue
         api_result = request_match_by_match_id( region   = regional_routing_value,
                                                 api_key  = api_key,
                                                 match    = match )
@@ -70,6 +78,7 @@ def store_match_data(matches, current_patch, min_date_time, regional_routing_val
 
 def load_compositions(region, players_amount, games_per_player, current_patch, ranked_league, min_date_time):
     api_key = open("apikey.txt", "r").read()
+    stored_matches = 0
 
     if region == "europe":
         platform_routing_value  = "euw1"
@@ -97,12 +106,18 @@ def load_compositions(region, players_amount, games_per_player, current_patch, r
 
         if puuid is None: return None
                                                     
-        matches = request_matches_by_puuid( region  = regional_routing_value,
-                                            api_key = api_key,
-                                            puuid   = puuid,
-                                            count   = games_per_player )
+        matches = request_matches_by_puuid( region     = regional_routing_value,
+                                            api_key    = api_key,
+                                            puuid      = puuid,
+                                            start_time = min_date_time,
+                                            count      = games_per_player )
 
+        ## Go to next player if current player has no matches
+        if len(matches) == 0: continue
+        ## Exit if api request failed
         if matches is None: return None
 
-    ## Store matches in database and return count of stored matches
-    return store_match_data(matches, current_patch, min_date_time, regional_routing_value, region, api_key)
+        ## Store matches in database and return count of stored matches
+        stored_matches += store_match_data(matches, current_patch, min_date_time, regional_routing_value, region, api_key)
+   
+    return stored_matches
