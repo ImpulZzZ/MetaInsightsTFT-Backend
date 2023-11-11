@@ -14,6 +14,7 @@ CREATE TABLE composition (
     placement INT NOT NULL,
     patch VARCHAR(20) NOT NULL,
     region VARCHAR(20) NOT NULL,
+    league VARCHAR(20) NOT NULL,
     match_time DATETIME NOT NULL
 );
 
@@ -198,14 +199,14 @@ def insert_trait(name, display_name, style, tier_current, tier_total, icon, comp
 
 
 ## Executes an insert query for a composition
-def insert_composition(match_id, level, placement, patch, region, match_time, connection=None):
+def insert_composition(match_id, level, placement, patch, region, league, match_time, connection=None):
     standalone_connection = False
     if connection is None:
         connection = create_mysql_connection()
         standalone_connection = True
     cursor = connection.cursor()
     try:
-        sql = f"INSERT INTO composition (match_id, level, placement, patch, region, match_time) VALUES ('{match_id}', '{level}', '{placement}', '{patch}', '{region}', '{match_time}')"
+        sql = f"INSERT INTO composition (match_id, level, placement, patch, region, league, match_time) VALUES ('{match_id}', '{level}', '{placement}', '{patch}', '{region}', '{league}', '{match_time}')"
         cursor.execute(sql)
         connection.commit()
         last_inserted_id = cursor.lastrowid
