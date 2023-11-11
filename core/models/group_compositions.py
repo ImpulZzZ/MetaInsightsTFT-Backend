@@ -103,7 +103,7 @@ def group_compositions_by_traits(patch, region, league, max_placement, max_avg_p
         avg_placement = round(combination_data['placement_counter'] / combination_data['counter'], 2)
         if avg_placement > max_avg_placement: continue
         combination_data.update({
-            'trait_styles': dict(trait_combination),
+            'trait_styles': dict(sorted(dict(trait_combination).items(), key=lambda item: (-item[1], item[0]))),
             'avg_placement': avg_placement
             })
         del combination_data['placement_counter']
