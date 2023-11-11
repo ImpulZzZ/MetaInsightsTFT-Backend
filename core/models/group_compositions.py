@@ -1,9 +1,9 @@
 from core.models.mysql_utils import *
 import itertools
 
-def group_compositions_by_champions(max_placement, min_counter, min_datetime):
+def group_compositions_by_champions(patch, max_placement, min_counter, min_datetime):
     # Join compositions with traits and filter by parameters
-    champions = get_sql_data(f"SELECT c.id AS composition_id, ch.display_name AS name, ch.tier AS tier, c.placement AS placement FROM composition c JOIN champion ch ON c.id = ch.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}'")
+    champions = get_sql_data(f"SELECT c.id AS composition_id, ch.display_name AS name, ch.tier AS tier, c.placement AS placement, c.patch AS patch FROM composition c JOIN champion ch ON c.id = ch.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}' AND c.patch = '{patch}'")
 
     ## Loop over sql result and group the champions and placements by their composition_id
     champ_dict = {}
@@ -46,9 +46,9 @@ def group_compositions_by_champions(max_placement, min_counter, min_datetime):
     return result
 
 
-def group_compositions_by_traits(max_placement, max_avg_placement, min_counter, min_datetime, trait_name=None, n_traits=None, ignore_single_unit_traits=False):
+def group_compositions_by_traits(patch, max_placement, max_avg_placement, min_counter, min_datetime, trait_name=None, n_traits=None, ignore_single_unit_traits=False):
     # Join compositions with traits and filter by parameters
-    sql = f"SELECT c.id AS composition_id, t.display_name AS trait_name, t.style AS trait_style, c.placement AS placement FROM composition c JOIN trait t ON c.id = t.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}'"
+    sql = f"SELECT c.id AS composition_id, t.display_name AS trait_name, t.style AS trait_style, c.placement AS placement, c.patch AS patch FROM composition c JOIN trait t ON c.id = t.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}' AND c.patch = '{patch}'"
     if ignore_single_unit_traits: sql += " AND t.tier_total != 1"
     traits = get_sql_data(sql)
 
