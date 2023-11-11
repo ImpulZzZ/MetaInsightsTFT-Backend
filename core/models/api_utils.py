@@ -52,8 +52,9 @@ def request_match_by_match_id(region, api_key, match):
     return None
 
 ## Requests TFT-Matches Api
-def request_matches_by_puuid(region, api_key, puuid, count):
-    url = f"https://{region}.api.riotgames.com/tft/match/v1/matches/by-puuid/{puuid}/ids?count={str(count)}&api_key={api_key}"
+def request_matches_by_puuid(region, api_key, puuid, start_time, count):
+    timestamp = str(int(start_time.timestamp()))
+    url = f"https://{region}.api.riotgames.com/tft/match/v1/matches/by-puuid/{puuid}/ids?count={str(count)}&startTime={timestamp}&api_key={api_key}"
     tries = 0
     while tries < 5:
         tries += 1
