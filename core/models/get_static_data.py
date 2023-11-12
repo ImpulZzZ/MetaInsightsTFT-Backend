@@ -50,4 +50,9 @@ def get_icons(name, display_name, table_name):
         'display_name': display_name
     }
     sql = build_sql_query(args, table_name)
-    return get_sql_data(sql)
+    paths = get_sql_data(sql)
+
+    result = {}
+    for current in paths: result.update({current['display_name']: current['icon']})
+
+    return result
