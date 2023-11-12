@@ -8,10 +8,10 @@ def group_compositions_by_champions(patch, region, league, max_placement, min_co
     ## Loop over sql result and group the champions and placements by their composition_id
     champ_dict = {}
     for champion in champions:
-        try: champ_dict[champion['composition_id']]['champion_tiers'].update( {champion['name'] : champion['tier']} )
+        try: champ_dict[champion['composition_id']]['combination'].update( {champion['name'] : champion['tier']} )
         except KeyError: champ_dict.update( { 
             champion['composition_id']: {
-                'champion_tiers': { champion['name'] : champion['tier'] },
+                'combination': { champion['name'] : champion['tier'] },
                 'placement': champion['placement']
                 }
             } )
@@ -22,7 +22,7 @@ def group_compositions_by_champions(patch, region, league, max_placement, min_co
     grouped_compositions = {}
     for composition_id, composition_data in champ_dict.items():
         placement = composition_data['placement']
-        champion_combination = frozenset(composition_data['champion_tiers'].items())  # Use frozenset to make it hashable
+        champion_combination = frozenset(composition_data['combination'].items())  # Use frozenset to make it hashable
 
         try:
             grouped_compositions[champion_combination]['counter'] += 1
@@ -37,7 +37,7 @@ def group_compositions_by_champions(patch, region, league, max_placement, min_co
     result = []
     for champion_combination, combination_data in sorted_by_counter_and_placement:
         combination_data.update({
-            'champion_tiers': dict(champion_combination),
+            'combination': dict(champion_combination),
             'avg_placement': round(combination_data['placement_counter'] / combination_data['counter'], 2)
             })
         del combination_data['placement_counter']
@@ -55,10 +55,10 @@ def group_compositions_by_traits(patch, region, league, max_placement, max_avg_p
     ## Loop over sql result and group the traits and placements by their composition_id
     trait_dict = {}
     for trait in traits:
-        try: trait_dict[trait['composition_id']]['trait_styles'].update( {trait['trait_name'] : trait['trait_style']} )
+        try: trait_dict[trait['composition_id']]['combination'].update( {trait['trait_name'] : trait['trait_style']} )
         except KeyError: trait_dict.update( { 
             trait['composition_id']: {
-                'trait_styles': { trait['trait_name'] : trait['trait_style'] },
+                'combination': { trait['trait_name'] : trait['trait_style'] },
                 'placement': trait['placement']
                 }
             } )
@@ -71,12 +71,12 @@ def group_compositions_by_traits(patch, region, league, max_placement, max_avg_p
         trait_combinations = []
 
         if trait_name is not None:
-            try: composition_data['trait_styles'][trait_name]
+            try: composition_data['combination'][trait_name]
             except KeyError: continue
 
         ## If n_traits is set, limit the combination length to n_traits and build all possible combinations. Use frozenset to make it hashable as key
         if n_traits is not None:
-            n_trait_combinations = itertools.combinations(composition_data['trait_styles'].items(), n_traits)
+            n_trait_combinations = itertools.combinations(composition_data['combination'].items(), n_traits)
             for trait_combination in n_trait_combinations:
                 if trait_name is not None:
                     try: dict(trait_combination)[trait_name]
@@ -85,7 +85,7 @@ def group_compositions_by_traits(patch, region, league, max_placement, max_avg_p
                     
                 
         ## Per default, do not limit the combination length and use all traits
-        else: trait_combinations.append(frozenset(composition_data['trait_styles'].items()))
+        else: trait_combinations.append(frozenset(composition_data['combination'].items()))
 
         for trait_combination in trait_combinations:
             try:
@@ -103,7 +103,7 @@ def group_compositions_by_traits(patch, region, league, max_placement, max_avg_p
         avg_placement = round(combination_data['placement_counter'] / combination_data['counter'], 2)
         if avg_placement > max_avg_placement: continue
         combination_data.update({
-            'trait_styles': dict(sorted(dict(trait_combination).items(), key=lambda item: (-item[1], item[0]))),
+            'combination': dict(sorted(dict(trait_combination).items(), key=lambda item: (-item[1], item[0]))),
             'avg_placement': avg_placement
             })
         del combination_data['placement_counter']
