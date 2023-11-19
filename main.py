@@ -39,7 +39,7 @@ def composition_get_data(
 @app.get("/compositionGroup/by-trait")
 def composition_group_by_trait(
     trait_name: Optional[str] = Query(default = None, description="Name of the trait to get compositions for. If left blank, all compositions are returned"),
-    n_traits: Optional[int] = Query(default=None, description="Number of traits to group by. If left blank, all traits are returned", ge=1, le=7),
+    combination_size: Optional[int] = Query(default=None, description="Number of traits to group by. If left blank, all traits are returned", ge=1, le=7),
     ignore_single_unit_traits: Optional[bool] = Query(default=False, description="Ignored traits, that are unique to one champion"),
     max_placement: Optional[int] = MAX_PLACEMENT_QUERY,
     max_avg_placement: Optional[float] = MAX_AVG_PLACEMENT_QUERY,
@@ -50,7 +50,7 @@ def composition_group_by_trait(
     min_datetime: Optional[datetime] = MIN_DATETIME_QUERY
     ):
     
-    return group_compositions_by_traits(patch, region, league, max_placement, max_avg_placement, min_counter, min_datetime, trait_name, n_traits, ignore_single_unit_traits)
+    return group_compositions_by_traits(patch, region, league, max_placement, max_avg_placement, min_counter, min_datetime, trait_name, combination_size, ignore_single_unit_traits)
 
 
 @app.get("/compositionGroup/by-champion")

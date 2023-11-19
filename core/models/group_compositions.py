@@ -46,7 +46,7 @@ def group_compositions_by_champions(patch, region, league, max_placement, min_co
     return result
 
 
-def group_compositions_by_traits(patch, region, league, max_placement, max_avg_placement, min_counter, min_datetime, trait_name=None, n_traits=None, ignore_single_unit_traits=False):
+def group_compositions_by_traits(patch, region, league, max_placement, max_avg_placement, min_counter, min_datetime, trait_name=None, combination_size=None, ignore_single_unit_traits=False):
     # Join compositions with traits and filter by parameters
     sql = f"SELECT c.id AS composition_id, t.display_name AS trait_name, t.style AS trait_style, c.placement AS placement, c.patch AS patch FROM composition c JOIN trait t ON c.id = t.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}' AND c.patch = '{patch}' AND c.league = '{league}' AND c.region = '{region}'"
     if ignore_single_unit_traits: sql += " AND t.tier_total != 1"
@@ -74,9 +74,9 @@ def group_compositions_by_traits(patch, region, league, max_placement, max_avg_p
             try: composition_data['combination'][trait_name]
             except KeyError: continue
 
-        ## If n_traits is set, limit the combination length to n_traits and build all possible combinations. Use frozenset to make it hashable as key
-        if n_traits is not None:
-            n_trait_combinations = itertools.combinations(composition_data['combination'].items(), n_traits)
+        ## If combination_size is set, limit the combination length to combination_size and build all possible combinations. Use frozenset to make it hashable as key
+        if combination_size is not None:
+            n_trait_combinations = itertools.combinations(composition_data['combination'].items(), combination_size)
             for trait_combination in n_trait_combinations:
                 if trait_name is not None:
                     try: dict(trait_combination)[trait_name]
