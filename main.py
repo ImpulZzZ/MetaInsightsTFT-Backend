@@ -55,6 +55,8 @@ def composition_group_by_trait(
 
 @app.get("/compositionGroup/by-champion")
 def composition_group_by_champion(
+    champion_name: Optional[str] = Query(default = None, description="Name of the champion to get compositions for. If left blank, all compositions are returned"),
+    combination_size: Optional[int] = Query(default=None, description="Number of champions to group by. If left blank, all champions are returned. Limited to 1-2 due to long computation with > 2", ge=1, le=2),
     max_placement: Optional[int] = MAX_PLACEMENT_QUERY,
     min_counter: Optional[int] = MIN_COUNTER_QUERY,
     patch: Optional[str] = PATCH_QUERY,
@@ -63,7 +65,7 @@ def composition_group_by_champion(
     min_datetime: Optional[datetime] = MIN_DATETIME_QUERY
     ):
     
-    return group_compositions_by_champions(patch, region, league, max_placement, min_counter, min_datetime)
+    return group_compositions_by_champions(patch, region, league, max_placement, min_counter, min_datetime, champion_name, combination_size)
 
 
 @app.get("/item/placements")

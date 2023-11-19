@@ -1,8 +1,8 @@
 from core.models.mysql_utils import *
 import itertools
 
-def group_compositions_by_champions(patch, region, league, max_placement, min_counter, min_datetime):
-    # Join compositions with traits and filter by parameters
+def group_compositions_by_champions(patch, region, league, max_placement, min_counter, min_datetime, champion_name=None, combination_size=None):
+    # Join compositions with champions and filter by parameters
     champions = get_sql_data(f"SELECT c.id AS composition_id, ch.display_name AS name, ch.tier AS tier, c.placement AS placement, c.patch AS patch FROM composition c JOIN champion ch ON c.id = ch.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}' AND c.patch = '{patch}' AND c.league = '{league}' AND c.region = '{region}'")
 
     ## Loop over sql result and group the champions and placements by their composition_id
@@ -22,12 +22,32 @@ def group_compositions_by_champions(patch, region, league, max_placement, min_co
     grouped_compositions = {}
     for composition_id, composition_data in champ_dict.items():
         placement = composition_data['placement']
+        champion_combinations = []
         champion_combination = frozenset(composition_data['combination'].items())  # Use frozenset to make it hashable
 
         try:
             grouped_compositions[champion_combination]['counter'] += 1
             grouped_compositions[champion_combination]['placement_counter'] += placement
         except KeyError: grouped_compositions.update( { champion_combination: {'counter': 1, 'placement_counter': placement} } )
+
+        ## If combination_size is set, limit the combination length to combination_size and build all possible combinations. Use frozenset to make it hashable as key
+        if combination_size is not None:
+            n_champion_combinations = itertools.combinations(composition_data['combination'].items(), combination_size)
+            for champion_combination in n_champion_combinations:
+                if champion_name is not None:
+                    try: dict(champion_combination)[champion_name]
+                    except KeyError: continue
+                champion_combinations.append(frozenset(champion_combination))
+                    
+                
+        ## Per default, do not limit the combination length and use all champions
+        else: champion_combinations.append(frozenset(composition_data['combination'].items()))
+
+        for champion_combination in champion_combinations:
+            try:
+                grouped_compositions[champion_combination]['counter'] += 1
+                grouped_compositions[champion_combination]['placement_counter'] += placement
+            except KeyError: grouped_compositions.update( { champion_combination: {'counter': 1, 'placement_counter': placement} } )
 
     ## Sort the dictionary, so that the most occurences are first.
     ## If occurences are equal, put the one with lower placement counter above
