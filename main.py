@@ -21,7 +21,7 @@ MIN_COUNTER_QUERY       = Query(default=4,                 description="Consider
 MIN_DATETIME_QUERY      = Query(default=fourteen_days_ago, description="Considers only matches that happened after this time")
 REGION_QUERY            = Query(default="europe",          description="Considers only matches of this region (loading korea needs more time)", regex="^(europe|korea)$")
 LEAGUE_QUERY            = Query(default="challenger",      description="Considers only matches of this league", regex="^(challenger|grandmaster|master)$")
-PATCH_QUERY             = Query(default="13.22",           description="Considers only matches of this patch",  regex="^([0-9]{1,2}\.[0-9]{1,2})$")
+PATCH_QUERY             = Query(default="13.23",           description="Considers only matches of this patch",  regex="^([0-9]{1,2}\.[0-9]{1,2})$")
 
 ## TODO: Add possibility to show both challenger and grandmaster matches and both regions
 
