@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Path
 from typing import Optional
 
 from core.models.mysql_utils import *
@@ -7,6 +7,7 @@ from core.models.get_compositions import *
 from core.models.group_compositions import *
 from core.models.get_placements import *
 from core.models.get_static_data import *
+from core.models.get_bis_items import *
 
 from datetime import datetime, timedelta
 
@@ -98,6 +99,21 @@ def champion_placements(
     min_datetime: Optional[datetime] = MIN_DATETIME_QUERY
     ):
     return get_champion_placements(champion_name, region, league, max_placement, min_datetime)
+
+
+@app.get("/champion/{champion_name}/items")
+def champion_items(
+    champion_name: Optional[str] = Path(description="Name of the champion to get best in slot items for. If left blank, all champions are returned"),
+    combination_size: Optional[int] = Query(default=3, description="Size of item combinations for each champion", ge=1, le=3),
+    region: Optional[str] = REGION_QUERY,
+    league: Optional[str] = LEAGUE_QUERY,
+    max_placement: Optional[int] = MAX_PLACEMENT_QUERY,
+    min_counter: Optional[int] = MIN_COUNTER_QUERY,
+    min_datetime: Optional[datetime] = MIN_DATETIME_QUERY
+    ):
+
+    return get_best_in_slot_items(combination_size, region, league, max_placement, min_counter, min_datetime, champion_name)
+
 
 @app.get("/champion/icons")
 def champion_icons(
