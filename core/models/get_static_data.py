@@ -1,9 +1,9 @@
 import json
 from core.models.mysql_utils import *
 
-DATA_VERSION  = "13.18.1"
-DATA_HOME_DIR = "Set9_5_data"
-CURRENT_PATCH = "13.21"
+DATA_VERSION  = "13.23.1"
+DATA_HOME_DIR = "Set10_data"
+CURRENT_PATCH = "13.23"
 ENTITY_TYPE_TO_FILE_MAP = {
     "tft-champion": f"{DATA_HOME_DIR}/champions.json",
     "tft-trait": f"{DATA_HOME_DIR}/traits.json",
