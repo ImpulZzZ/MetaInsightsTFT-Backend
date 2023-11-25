@@ -2,7 +2,7 @@ import settings
 
 from core.models.get_bis_items import get_best_in_slot_items
 from core.models.get_placements import get_champion_placements
-from core.models.get_static_data import get_icons
+from core.models.get_static_data import get_icons, get_champion_names
 
 from datetime import datetime
 from fastapi import Query, Path, APIRouter
@@ -43,3 +43,7 @@ def champion_icons(
     display_name: Optional[str] = Query(default = None, description="Display name of the champion to get icon path for")
 ):
     return get_icons(name, display_name, "champion")
+
+@router.get("/champion")
+def champion_names(patch: Optional[str] = settings.PATCH_QUERY):
+    return get_champion_names(patch)

@@ -1,7 +1,7 @@
 import settings
 
 from core.models.get_placements import get_item_placements
-from core.models.get_static_data import get_icons
+from core.models.get_static_data import get_icons, get_item_names
 
 from datetime import datetime
 from fastapi import Query, APIRouter
@@ -29,3 +29,8 @@ def item_icons(
     display_name: Optional[str] = Query(default = None, description="Display name of the item to get icon path for")
 ):
     return get_icons(name, display_name, "item")
+
+
+@router.get("/item")
+def item_names(patch: Optional[str] = settings.PATCH_QUERY):
+    return get_item_names(patch)

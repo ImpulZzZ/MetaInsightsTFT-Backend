@@ -1,7 +1,7 @@
 import settings
 
 from core.models.get_placements import get_trait_placements
-from core.models.get_static_data import get_icons
+from core.models.get_static_data import get_icons, get_trait_names
 
 from datetime import datetime
 from fastapi import Query, APIRouter
@@ -27,3 +27,8 @@ def trait_icons(
     display_name: Optional[str] = Query(default = None, description="Display name of the trait to get icon path for")
 ):
     return get_icons(name, display_name, "trait")
+
+
+@router.get("/trait")
+def trait_names(patch: Optional[str] = settings.PATCH_QUERY):
+    return get_trait_names(patch)

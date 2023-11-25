@@ -52,3 +52,30 @@ def get_icons(name, display_name, table_name):
     for current in paths: result.update({current['display_name']: current['icon']})
 
     return result
+
+
+def get_champion_names(patch):
+    result = []
+    champions = get_sql_data(f"SELECT DISTINCT ch.display_name FROM composition c JOIN champion ch ON c.id = ch.composition_id JOIN item i ON ch.id = i.champion_id WHERE c.patch = '{patch}' ORDER BY ch.display_name", False)
+    for champion in champions:
+        for name in champion:
+            result.append(name)
+    return result
+
+
+def get_item_names(patch):
+    result = []
+    items = get_sql_data(f"SELECT DISTINCT i.display_name FROM composition c JOIN champion ch ON c.id = ch.composition_id JOIN item i ON ch.id = i.champion_id WHERE c.patch = '{patch}' AND i.display_name != '' ORDER BY i.display_name", False)
+    for item in items:
+        for name in item:
+            result.append(name)
+    return result
+
+
+def get_trait_names(patch):
+    result = []
+    traits = get_sql_data(f"SELECT DISTINCT t.display_name FROM composition c JOIN trait t ON c.id = t.composition_id WHERE c.patch = '{patch}' ORDER BY t.display_name;", False)
+    for trait in traits:
+        for name in trait:
+            result.append(name)
+    return result
