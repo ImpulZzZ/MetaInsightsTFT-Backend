@@ -55,7 +55,7 @@ def get_icons(name, display_name, table_name):
 
 
 def get_champion_names(patch):
-    result = []
+    result = [""]
     champions = get_sql_data(f"SELECT DISTINCT ch.display_name FROM composition c JOIN champion ch ON c.id = ch.composition_id JOIN item i ON ch.id = i.champion_id WHERE c.patch = '{patch}' ORDER BY ch.display_name", False)
     for champion in champions:
         for name in champion:
@@ -64,7 +64,7 @@ def get_champion_names(patch):
 
 
 def get_item_names(patch):
-    result = []
+    result = [""]
     items = get_sql_data(f"SELECT DISTINCT i.display_name FROM composition c JOIN champion ch ON c.id = ch.composition_id JOIN item i ON ch.id = i.champion_id WHERE c.patch = '{patch}' AND i.display_name != '' ORDER BY i.display_name", False)
     for item in items:
         for name in item:
@@ -73,7 +73,7 @@ def get_item_names(patch):
 
 
 def get_trait_names(patch):
-    result = []
+    result = [""]
     traits = get_sql_data(f"SELECT DISTINCT t.display_name FROM composition c JOIN trait t ON c.id = t.composition_id WHERE c.patch = '{patch}' ORDER BY t.display_name;", False)
     for trait in traits:
         for name in trait:
