@@ -21,6 +21,10 @@ def group_compositions_by_champions(patch, region, league, max_placement, min_co
     ## Stored in new dictionary with champions as key and counters as value
     grouped_compositions = {}
     for composition_id, composition_data in champ_dict.items():
+        if champion_name is not None:
+            try: composition_data['combination'][champion_name]
+            except KeyError: continue
+
         placement = composition_data['placement']
         champion_combinations = []
         champion_combination = frozenset(composition_data['combination'].items())  # Use frozenset to make it hashable
@@ -38,8 +42,7 @@ def group_compositions_by_champions(patch, region, league, max_placement, min_co
                     try: dict(champion_combination)[champion_name]
                     except KeyError: continue
                 champion_combinations.append(frozenset(champion_combination))
-                    
-                
+
         ## Per default, do not limit the combination length and use all champions
         else: champion_combinations.append(frozenset(composition_data['combination'].items()))
 
