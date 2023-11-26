@@ -1,7 +1,7 @@
 from core.models.mysql_utils import *
 import itertools
 
-def group_compositions_by_champions(patch, region, league, max_placement, min_counter, min_datetime, champion_name=None, combination_size=None):
+def group_compositions_by_champions(patch, region, league, max_placement, min_counter, min_datetime, champion_name=None, combination_size=0):
     # Join compositions with champions and filter by parameters
     champions = get_sql_data(f"SELECT c.id AS composition_id, ch.display_name AS name, ch.tier AS tier, c.placement AS placement, c.patch AS patch FROM composition c JOIN champion ch ON c.id = ch.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}' AND c.patch = '{patch}' AND c.league = '{league}' AND c.region = '{region}'")
 
@@ -35,7 +35,7 @@ def group_compositions_by_champions(patch, region, league, max_placement, min_co
         except KeyError: grouped_compositions.update( { champion_combination: {'counter': 1, 'placement_counter': placement} } )
 
         ## If combination_size is set, limit the combination length to combination_size and build all possible combinations. Use frozenset to make it hashable as key
-        if combination_size is not None:
+        if combination_size > 0:
             n_champion_combinations = itertools.combinations(composition_data['combination'].items(), combination_size)
             for champion_combination in n_champion_combinations:
                 if champion_name is not None:
@@ -69,7 +69,7 @@ def group_compositions_by_champions(patch, region, league, max_placement, min_co
     return result
 
 
-def group_compositions_by_traits(patch, region, league, max_placement, max_avg_placement, min_counter, min_datetime, trait_name=None, combination_size=None, ignore_single_unit_traits=False):
+def group_compositions_by_traits(patch, region, league, max_placement, max_avg_placement, min_counter, min_datetime, trait_name=None, combination_size=0, ignore_single_unit_traits=False):
     # Join compositions with traits and filter by parameters
     sql = f"SELECT c.id AS composition_id, t.display_name AS trait_name, t.style AS trait_style, c.placement AS placement, c.patch AS patch FROM composition c JOIN trait t ON c.id = t.composition_id WHERE c.placement <= {max_placement} AND c.match_time >= '{min_datetime}' AND c.patch = '{patch}' AND c.league = '{league}' AND c.region = '{region}'"
     if ignore_single_unit_traits: sql += " AND t.tier_total != 1"
@@ -98,7 +98,7 @@ def group_compositions_by_traits(patch, region, league, max_placement, max_avg_p
             except KeyError: continue
 
         ## If combination_size is set, limit the combination length to combination_size and build all possible combinations. Use frozenset to make it hashable as key
-        if combination_size is not None:
+        if combination_size > 0:
             n_trait_combinations = itertools.combinations(composition_data['combination'].items(), combination_size)
             for trait_combination in n_trait_combinations:
                 if trait_name is not None:

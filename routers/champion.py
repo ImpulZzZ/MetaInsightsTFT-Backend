@@ -25,7 +25,7 @@ def champion_placements(
 @router.get("/champion/{champion_name}/items")
 def champion_items(
     champion_name: Optional[str] = Path(description="Name of the champion to get best in slot items for. If left blank, all champions are returned"),
-    combination_size: Optional[int] = Query(default=3, description="Size of item combinations for each champion", ge=1, le=3),
+    combination_size: Optional[int] = Query(default=0, description="Size of item combinations for each champion", ge=0, le=3),
     patch: Optional[str] = settings.PATCH_QUERY,
     region: Optional[str] = settings.REGION_QUERY,
     league: Optional[str] = settings.LEAGUE_QUERY,

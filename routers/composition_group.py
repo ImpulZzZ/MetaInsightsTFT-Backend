@@ -12,7 +12,7 @@ router = APIRouter()
 @router.get("/compositionGroup/by-trait")
 def composition_group_by_trait(
     trait_name: Optional[str] = Query(default = None, description="Name of the trait to get compositions for. If left blank, all compositions are returned"),
-    combination_size: Optional[int] = Query(default=None, description="Number of traits to group by. If left blank, all traits are returned", ge=1, le=7),
+    combination_size: Optional[int] = Query(default=0, description="Number of traits to group by. If left blank, all traits are returned", ge=0, le=7),
     ignore_single_unit_traits: Optional[bool] = Query(default=False, description="Ignored traits, that are unique to one champion"),
     max_placement: Optional[int] = settings.MAX_PLACEMENT_QUERY,
     max_avg_placement: Optional[float] = settings.MAX_AVG_PLACEMENT_QUERY,
@@ -29,7 +29,7 @@ def composition_group_by_trait(
 @router.get("/compositionGroup/by-champion")
 def composition_group_by_champion(
     champion_name: Optional[str] = Query(default = None, description="Name of the champion to get compositions for. If left blank, all compositions are returned"),
-    combination_size: Optional[int] = Query(default=None, description="Number of champions to group by. If left blank, all champions are returned. Limited to 1-2 due to long computation with > 2", ge=1, le=2),
+    combination_size: Optional[int] = Query(default=0, description="Number of champions to group by. If 0 all champions are returned. Limited to 0-2 due to long computation with > 2", ge=0, le=2),
     max_placement: Optional[int] = settings.MAX_PLACEMENT_QUERY,
     min_counter: Optional[int] = settings.MIN_COUNTER_QUERY,
     patch: Optional[str] = settings.PATCH_QUERY,
